@@ -28,7 +28,7 @@ You will need to have your JAVA_HOME environment variable set with java 11 or ab
 Endpoint | Description
 --- | ---
 GET /api/v1/insurance/plan | Plan insurance personalized package
-GET /actuator/health | Checks application health
+GET /actuator/health | Check application health
 
 ### Plan insurance personalized package
     curl -X GET http://localhost:8080/api/v1/insurance/plan
@@ -59,7 +59,7 @@ Status 200 OK
 }
 ```
 
-### Plan insurance personalized package
+### Check application health
     curl -X GET http://localhost:8080/actuator/health
 
 Status 200 OK
