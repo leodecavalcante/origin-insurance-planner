@@ -10,7 +10,7 @@ import origin.insuranceplanner.domain.model.*
 internal class BaseScoreServiceTest {
 
     @Autowired
-    private lateinit var baseScoreService: BaseScoreService
+    private lateinit var scoreService: ScoreService
 
     @Test
     fun `should return base score zero`() {
@@ -18,8 +18,29 @@ internal class BaseScoreServiceTest {
             OwnershipStatusEnum.OWNED
         ), Vehicle(2018)
         )
-        val baseScore = baseScoreService.calculate(personalInformation)
+        val baseScore = scoreService.calculateBaseScore(personalInformation)
 
         Assertions.assertEquals(0, baseScore)
+    }
+
+    @Test
+    fun `should return risk score economic`() {
+        val riskScore = scoreService.processScore(0)
+
+        Assertions.assertEquals(RiskScore.ECONOMIC, riskScore)
+    }
+
+    @Test
+    fun `should return risk score regular`() {
+        val riskScore = scoreService.processScore(1)
+
+        Assertions.assertEquals(RiskScore.REGULAR, riskScore)
+    }
+
+    @Test
+    fun `should return risk score responsible`() {
+        val riskScore = scoreService.processScore(3)
+
+        Assertions.assertEquals(RiskScore.RESPONSIBLE, riskScore)
     }
 }

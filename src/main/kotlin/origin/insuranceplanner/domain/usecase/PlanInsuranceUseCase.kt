@@ -9,16 +9,16 @@ import origin.insuranceplanner.domain.service.*
 
 @Service
 class PlanInsuranceUseCase(
-    val baseScoreService: BaseScoreService,
+    val scoreService: ScoreService,
     val autoInsuranceService: AutoInsuranceService,
     val disabilityInsuranceService: DisabilityInsuranceService,
-    val homeRiskScoreService: HomeInsuranceService,
-    val lifeRiskScoreService: LifeInsuranceService
+    val homeInsuranceService: HomeInsuranceService,
+    val lifeInsuranceService: LifeInsuranceService
 ) {
     val logger: Logger = LoggerFactory.getLogger(PlanInsuranceUseCase::class.java)
 
     fun provideInsurancePlan(personalInformation: PersonalInformation): RiskProfile {
-        val baseScore = baseScoreService.calculate(personalInformation)
+        val baseScore = scoreService.calculateBaseScore(personalInformation)
         logger.info("Base score is: $baseScore")
 
         val autoRiskScore = autoInsuranceService.plan(baseScore, personalInformation.vehicle)
@@ -34,10 +34,10 @@ class PlanInsuranceUseCase(
         )
         logger.info("Disability risk score is: $disabilityRiskScore")
 
-        val homeRiskScore = homeRiskScoreService.plan(baseScore, personalInformation.house)
+        val homeRiskScore = homeInsuranceService.plan(baseScore, personalInformation.house)
         logger.info("Home risk score is: $homeRiskScore")
 
-        val lifeRiskScore = lifeRiskScoreService.plan(
+        val lifeRiskScore = lifeInsuranceService.plan(
             baseScore,
             personalInformation.age,
             personalInformation.maritalStatus,

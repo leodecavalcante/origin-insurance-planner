@@ -12,32 +12,32 @@ import origin.insuranceplanner.domain.model.RiskScore
 internal class HomeInsuranceServiceTest {
     
     @Autowired
-    private lateinit var homeRiskScoreService: HomeInsuranceService
+    private lateinit var homeInsuranceService: HomeInsuranceService
 
     @Test
     fun `should return ineligible home risk score`() {
-        val riskScore = homeRiskScoreService.plan(0, null)
+        val riskScore = homeInsuranceService.plan(0, null)
 
         Assertions.assertEquals(RiskScore.INELIGIBLE, riskScore)
     }
 
     @Test
     fun `should return economic home risk score`() {
-        val riskScore = homeRiskScoreService.plan(0, House(OwnershipStatusEnum.OWNED))
+        val riskScore = homeInsuranceService.plan(0, House(OwnershipStatusEnum.OWNED))
 
         Assertions.assertEquals(RiskScore.ECONOMIC, riskScore)
     }
 
     @Test
     fun `should return regular home risk score`() {
-        val riskScore = homeRiskScoreService.plan(2, House(OwnershipStatusEnum.OWNED))
+        val riskScore = homeInsuranceService.plan(2, House(OwnershipStatusEnum.OWNED))
 
         Assertions.assertEquals(RiskScore.REGULAR, riskScore)
     }
 
     @Test
     fun `should return responsible home risk score`() {
-        val riskScore = homeRiskScoreService.plan(2, House(OwnershipStatusEnum.MORTGAGED))
+        val riskScore = homeInsuranceService.plan(2, House(OwnershipStatusEnum.MORTGAGED))
 
         Assertions.assertEquals(RiskScore.RESPONSIBLE, riskScore)
     }

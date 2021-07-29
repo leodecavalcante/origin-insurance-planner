@@ -6,7 +6,7 @@ import origin.insuranceplanner.domain.model.Vehicle
 import java.time.LocalDate
 
 @Service
-class AutoInsuranceService {
+class AutoInsuranceService(val scoreService: ScoreService) {
     fun plan(baseScore: Int, vehicle: Vehicle?): RiskScore {
         var score = baseScore
 
@@ -16,6 +16,6 @@ class AutoInsuranceService {
             }
         } ?: return RiskScore.INELIGIBLE
 
-        return RiskScore.processScore(score)
+        return scoreService.processScore(score)
     }
 }

@@ -5,7 +5,7 @@ import origin.insuranceplanner.domain.model.MaritalStatusEnum
 import origin.insuranceplanner.domain.model.RiskScore
 
 @Service
-class LifeInsuranceService {
+class LifeInsuranceService(val scoreService: ScoreService) {
     fun plan(
         baseScore: Int,
         age: Int,
@@ -26,6 +26,6 @@ class LifeInsuranceService {
             score += 1
         }
 
-        return RiskScore.processScore(score)
+        return scoreService.processScore(score)
     }
 }

@@ -13,39 +13,39 @@ import origin.insuranceplanner.domain.model.RiskScore
 internal class DisabilityInsuranceServiceTest {
 
     @Autowired
-    private lateinit var disabilityRiskScoreService: DisabilityInsuranceService
+    private lateinit var disabilityInsuranceService: DisabilityInsuranceService
 
     @Test
     fun `should return ineligible disability risk score when income is zero`() {
-        val riskScore = disabilityRiskScoreService.plan(0, 0, 35, MaritalStatusEnum.SINGLE, 0, null)
+        val riskScore = disabilityInsuranceService.plan(0, 0, 35, MaritalStatusEnum.SINGLE, 0, null)
 
         Assertions.assertEquals(RiskScore.INELIGIBLE, riskScore)
     }
 
     @Test
     fun `should return ineligible disability risk score for income zero`() {
-        val riskScore = disabilityRiskScoreService.plan(0, 10000, 61, MaritalStatusEnum.SINGLE, 0, null)
+        val riskScore = disabilityInsuranceService.plan(0, 10000, 61, MaritalStatusEnum.SINGLE, 0, null)
 
         Assertions.assertEquals(RiskScore.INELIGIBLE, riskScore)
     }
 
     @Test
     fun `should return economic disability risk score`() {
-        val riskScore = disabilityRiskScoreService.plan(0, 10000, 35, MaritalStatusEnum.SINGLE, 0, null)
+        val riskScore = disabilityInsuranceService.plan(0, 10000, 35, MaritalStatusEnum.SINGLE, 0, null)
 
         Assertions.assertEquals(RiskScore.ECONOMIC, riskScore)
     }
 
     @Test
     fun `should return regular disability risk score`() {
-        val riskScore = disabilityRiskScoreService.plan(1, 10000, 35, MaritalStatusEnum.MARRIED, 1, null)
+        val riskScore = disabilityInsuranceService.plan(1, 10000, 35, MaritalStatusEnum.MARRIED, 1, null)
 
         Assertions.assertEquals(RiskScore.REGULAR, riskScore)
     }
 
     @Test
     fun `should return responsible disability risk score`() {
-        val riskScore = disabilityRiskScoreService.plan(2, 10000, 35,
+        val riskScore = disabilityInsuranceService.plan(2, 10000, 35,
             MaritalStatusEnum.MARRIED, 1, House(OwnershipStatusEnum.MORTGAGED)
         )
 
