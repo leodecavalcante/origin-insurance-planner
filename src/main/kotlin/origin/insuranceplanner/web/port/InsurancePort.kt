@@ -1,8 +1,8 @@
-package origin.insuranceplanner.application.port
+package origin.insuranceplanner.web.port
 
 import org.springframework.stereotype.Component
-import origin.insuranceplanner.application.dto.PlanInsuranceRequest
-import origin.insuranceplanner.application.dto.PlanInsuranceResponse
+import origin.insuranceplanner.web.dto.PlanInsuranceRequest
+import origin.insuranceplanner.web.dto.PlanInsuranceResponse
 import origin.insuranceplanner.domain.usecase.PlanInsuranceUseCase
 
 @Component

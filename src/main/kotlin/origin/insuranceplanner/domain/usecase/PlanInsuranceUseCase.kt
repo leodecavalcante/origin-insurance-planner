@@ -1,27 +1,46 @@
 package origin.insuranceplanner.domain.usecase
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import origin.insuranceplanner.domain.model.*
 import origin.insuranceplanner.domain.model.MaritalStatusEnum.MARRIED
-import origin.insuranceplanner.domain.model.OwnershipStatusEnum
 import origin.insuranceplanner.domain.model.OwnershipStatusEnum.MORTGAGED
-import origin.insuranceplanner.domain.model.PersonalInformation
-import origin.insuranceplanner.domain.model.RiskProfile
-import origin.insuranceplanner.domain.model.RiskScore
 import origin.insuranceplanner.domain.model.RiskScore.*
 import java.time.LocalDate
 
 @Service
 class PlanInsuranceUseCase {
 
-//    private Logger.getLogger("PlanInsuranceUseCase")
+    val logger: Logger = LoggerFactory.getLogger(PlanInsuranceUseCase::class.java)
 
-
-    private val maxIncomeWithoutDeduction: Int = 200000
-
-    // age < 30 - 2 all
-    // between 30 and 40 - 1 all
-    // income > 200k - 1 all
     fun provideInsurancePlan(personalInformation: PersonalInformation): RiskProfile {
+        val baseScore = calculateBaseScore(personalInformation)
+        logger.info("Base score is: $baseScore")
+        val autoRiskScore = planAutoRiskScore(baseScore, personalInformation.vehicle)
+        logger.info("Auto risk score is: $autoRiskScore")
+        val disabilityRiskScore = planDisabilityRiskScore(
+            baseScore,
+            personalInformation.income,
+            personalInformation.age,
+            personalInformation.maritalStatus,
+            personalInformation.dependents,
+            personalInformation.house
+        )
+        logger.info("Disability risk score is: $disabilityRiskScore")
+        val homeRiskScore = planHomeRiskScore(baseScore, personalInformation.house)
+        logger.info("Home risk score is: $homeRiskScore")
+        val lifeRiskScore = planLifeRiskScore(
+            baseScore,
+            personalInformation.age,
+            personalInformation.maritalStatus,
+            personalInformation.dependents
+        )
+        logger.info("Life risk score is: $lifeRiskScore")
+        return RiskProfile(autoRiskScore, disabilityRiskScore, homeRiskScore, lifeRiskScore)
+    }
+
+    protected fun calculateBaseScore(personalInformation: PersonalInformation): Int {
         var baseScore = 0
 
         personalInformation.riskQuestions.forEach { baseScore += it }
@@ -31,29 +50,17 @@ class PlanInsuranceUseCase {
             personalInformation.age in 30..40 -> baseScore -= 1
         }
 
-        if (personalInformation.income > maxIncomeWithoutDeduction) {
+        if (personalInformation.income > 200000) {
             baseScore -= 1
         }
 
-//        Config.log.println("Base score is: baseScore")
-        val autoRiskScore = planAutoRiskScore(personalInformation, baseScore)
-//        Config.log.println("Auto risk score is: $autoRiskScore")
-        val disabilityRiskScore = planDisabilityRiskScore(personalInformation, baseScore)
-//        Config.log.println("Disability risk score is: $disabilityRiskScore")
-        val homeRiskScore = planHomeRiskScore(personalInformation, baseScore)
-//        Config.log.println("Home risk score is: $homeRiskScore")
-        val lifeRiskScore = planLifeRiskScore(personalInformation, baseScore)
-//        Config.log.println("Life risk score is: $lifeRiskScore")
-
-        return RiskProfile(autoRiskScore, disabilityRiskScore, homeRiskScore, lifeRiskScore)
+        return baseScore
     }
 
-    // 0 vehicles  ineligible for auto
-    // vehicle year < LocalDate.year - 5 + 1 auto
-    private fun planAutoRiskScore(personalInformation: PersonalInformation, baseScore: Int): RiskScore {
+    protected fun planAutoRiskScore(baseScore: Int, vehicle: Vehicle?): RiskScore {
         var score = baseScore
 
-        personalInformation.vehicle?.let {
+        vehicle?.let {
             if (it.year > LocalDate.now().year - 5) {
                 score += 1
             }
@@ -62,28 +69,30 @@ class PlanInsuranceUseCase {
         return processScore(score)
     }
 
-    // 0 income ineligible for disability
-    // age > 60 ineligible for disability and life
-    // maritalstatus married + 1 life and - 1 disability
-    // dependents > 0 + 1 disability and life
-    // house mortgaged + 1 home and disability
-    private fun planDisabilityRiskScore(personalInformation: PersonalInformation, baseScore: Int): RiskScore {
+    protected fun planDisabilityRiskScore(
+        baseScore: Int,
+        income: Int,
+        age: Int,
+        maritalStatus: MaritalStatusEnum,
+        dependents: Int,
+        house: House?
+    ): RiskScore {
         var score = baseScore
 
-        if (personalInformation.income == 0 || isAgeIneligible(personalInformation.age)) {
+        if (income == 0 || age > 60) {
             return INELIGIBLE
         }
 
-        if (personalInformation.maritalStatus == MARRIED) {
+        if (maritalStatus == MARRIED) {
             score -= 1
         }
 
-        if (personalInformation.dependents > 0) {
+        if (dependents > 0) {
             score += 1
         }
 
-        personalInformation.house?.let {
-            if (it.ownershipStatus == OwnershipStatusEnum.MORTGAGED) {
+        house?.let {
+            if (it.ownershipStatus == MORTGAGED) {
                 score += 1
             }
         }
@@ -91,13 +100,11 @@ class PlanInsuranceUseCase {
         return processScore(score)
     }
 
-    // house mortgaged + 1 home and disability
-    // 0 houses ineligible for home
-    private fun planHomeRiskScore(personalInformation: PersonalInformation, baseScore: Int): RiskScore {
+    protected fun planHomeRiskScore(baseScore: Int, house: House?): RiskScore {
         var score = baseScore
 
-        personalInformation.house?.let {
-            if (personalInformation.house.ownershipStatus == MORTGAGED){
+        house?.let {
+            if (it.ownershipStatus == MORTGAGED) {
                 score += 1
             }
         } ?: return INELIGIBLE
@@ -105,32 +112,30 @@ class PlanInsuranceUseCase {
         return processScore(score)
     }
 
-    // age > 60 ineligible for disability and life
-    // maritalstatus married + 1 life and - 1 disability
-    // dependents > 0 + 1 disability and life
-    private fun planLifeRiskScore(personalInformation: PersonalInformation, baseScore: Int): RiskScore {
+    protected fun planLifeRiskScore(
+        baseScore: Int,
+        age: Int,
+        maritalStatus: MaritalStatusEnum,
+        dependents: Int
+    ): RiskScore {
         var score = baseScore
 
-        if (isAgeIneligible(personalInformation.age)) {
+        if (age > 60) {
             return INELIGIBLE
         }
 
-        if (personalInformation.maritalStatus == MARRIED) {
+        if (maritalStatus == MARRIED) {
             score += 1
         }
 
-        if (personalInformation.dependents > 0) {
+        if (dependents > 0) {
             score += 1
         }
 
         return processScore(score)
     }
 
-    private fun isAgeIneligible(age: Int): Boolean {
-        return age > 60
-    }
-
-    private fun processScore(baseScore: Int): RiskScore {
+    protected fun processScore(baseScore: Int): RiskScore {
         return when (baseScore) {
             in Int.MIN_VALUE..0 -> ECONOMIC
             in 1..2 -> REGULAR

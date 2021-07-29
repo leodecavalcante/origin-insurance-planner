@@ -1,13 +1,13 @@
 package origin.insuranceplanner.domain.model
 
 data class PersonalInformation(
-        val age: Int,
-        val dependents: Int,
-        val income: Int,
-        val maritalStatus: MaritalStatusEnum,
-        val riskQuestions: List<Int>,
-        val house: House?,
-        val vehicle: Vehicle?
+    val age: Int,
+    val dependents: Int,
+    val income: Int,
+    val maritalStatus: MaritalStatusEnum,
+    val riskQuestions: List<Int>,
+    val house: House? = null,
+    val vehicle: Vehicle? = null
 )
 
 enum class MaritalStatusEnum {
@@ -15,7 +15,7 @@ enum class MaritalStatusEnum {
 }
 
 data class House(
-        val ownershipStatus: OwnershipStatusEnum
+    val ownershipStatus: OwnershipStatusEnum
 )
 
 enum class OwnershipStatusEnum {
@@ -23,5 +23,5 @@ enum class OwnershipStatusEnum {
 }
 
 data class Vehicle(
-        val year: Int
+    val year: Int
 )
