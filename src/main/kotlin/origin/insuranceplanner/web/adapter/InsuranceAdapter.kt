@@ -11,7 +11,7 @@ import origin.insuranceplanner.web.dto.PlanInsuranceResponse
 import origin.insuranceplanner.web.port.InsurancePort
 
 @RestController
-@RequestMapping("/insurance")
+@RequestMapping("/api/v1/insurance")
 class InsuranceAdapter(val insurancePort: InsurancePort) {
 
     val logger: Logger = LoggerFactory.getLogger(InsuranceAdapter::class.java)
